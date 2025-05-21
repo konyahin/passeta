@@ -17,6 +17,7 @@ var (
 
 	onSearch func(string)
 	onDone   func(string, bool)
+	onDelete  func(int)
 )
 
 func init() {
@@ -47,6 +48,10 @@ func SetOnSearchCallback(callback func(string)) {
 
 func SetOnDoneCallback(callback func(string, bool)) {
 	onDone = callback
+}
+
+func SetOnDeleteCallback(callback func(int)) {
+	onDelete = callback
 }
 
 func SetStatusString(status string) {
@@ -98,6 +103,12 @@ func viewInit() {
 			fallthrough
 		case tcell.KeyUp:
 			passwordsList.SetCurrentItem(passwordsList.GetCurrentItem() - 1)
+		
+		case tcell.KeyCtrlD:
+			// not a new password
+			if index := passwordsList.GetCurrentItem(); index != passwordsList.GetItemCount() {
+				onDelete(index)
+			}
 
 		case tcell.KeyCtrlQ:
 			app.Stop()

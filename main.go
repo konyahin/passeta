@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"slices"
 	"strings"
 
 	"konyahin.xyz/passeta/view"
@@ -66,6 +67,8 @@ func main() {
 					view.SetStatusErrorString("error: " + string(output))
 				} else {
 					view.SetStatusString(name + " created")
+					passwords = append(passwords, name)
+					view.SetItems(passwords)
 				}
 				view.Redraw()
 			}()
@@ -79,6 +82,20 @@ func main() {
 		} else {
 			view.SetStatusString(name + " in your clipboard")
 		}
+	})
+
+	view.SetOnDeleteCallback(func(i int) {
+		name := passwords[i]
+		cmd := exec.Command("pass", "delete", "-rf", name)
+		output, err := cmd.CombinedOutput()
+		if err != nil {
+			view.SetStatusErrorString("error: " + string(output))
+		} else {
+			view.SetStatusString(name + " was deleted")
+		}
+
+		passwords = slices.Delete(passwords, i, i+1)
+		view.SetItems(passwords)
 	})
 
 	view.Run()
