@@ -2,6 +2,7 @@ package view
 
 import (
 	"log"
+	"strings"
 
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
@@ -17,7 +18,7 @@ var (
 
 	onSearch func(string)
 	onDone   func(string, bool)
-	onDelete  func(int)
+	onDelete func(int)
 )
 
 func init() {
@@ -103,12 +104,25 @@ func viewInit() {
 			fallthrough
 		case tcell.KeyUp:
 			passwordsList.SetCurrentItem(passwordsList.GetCurrentItem() - 1)
-		
+
 		case tcell.KeyCtrlD:
 			// not a new password
 			if index := passwordsList.GetCurrentItem(); index != passwordsList.GetItemCount() {
 				onDelete(index)
 			}
+
+		case tcell.KeyTab:
+			if index := passwordsList.GetCurrentItem(); index == passwordsList.GetItemCount() {
+				return nil
+			}
+			currentText := searchField.GetText()
+			_, firstPassword := passwordsList.GetItemText(0)
+			first, _, found := strings.Cut(firstPassword[len(currentText)+1:], "/")
+			if found {
+				first = first + "/"
+			}
+			searchField.SetText(currentText + first)
+			return nil
 
 		case tcell.KeyCtrlQ:
 			app.Stop()
