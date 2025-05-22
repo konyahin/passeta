@@ -16,9 +16,9 @@ var (
 	searchField   *tview.InputField = tview.NewInputField()
 	statusText    *tview.TextView   = tview.NewTextView()
 
-	onSearch func(string)
-	onDone   func(string, bool)
-	onDelete func(int)
+	onSearch func(string)                          = func(s string) {}
+	onDone   func(text string, isNewPassword bool) = func(text string, isNewPassword bool) {}
+	onDelete func(int)                             = func(i int) {}
 )
 
 func init() {
@@ -47,7 +47,7 @@ func SetOnSearchCallback(callback func(string)) {
 	onSearch = callback
 }
 
-func SetOnDoneCallback(callback func(string, bool)) {
+func SetOnDoneCallback(callback func(text string, isNewPassword bool)) {
 	onDone = callback
 }
 
@@ -95,24 +95,19 @@ func viewInit() {
 
 	app.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		switch event.Key() {
-		case tcell.KeyCtrlN:
-			fallthrough
-		case tcell.KeyDown:
+		case tcell.KeyCtrlN, tcell.KeyDown:
 			passwordsList.SetCurrentItem(passwordsList.GetCurrentItem() + 1)
 
-		case tcell.KeyCtrlP:
-			fallthrough
-		case tcell.KeyUp:
+		case tcell.KeyCtrlP, tcell.KeyUp:
 			passwordsList.SetCurrentItem(passwordsList.GetCurrentItem() - 1)
 
 		case tcell.KeyCtrlD:
-			// not a new password
-			if index := passwordsList.GetCurrentItem(); index != passwordsList.GetItemCount() {
-				onDelete(index)
+			if isPasswordSelected() {
+				onDelete(passwordsList.GetCurrentItem())
 			}
 
 		case tcell.KeyTab:
-			if index := passwordsList.GetCurrentItem(); index == passwordsList.GetItemCount() {
+			if !isPasswordSelected() {
 				return nil
 			}
 			currentText := searchField.GetText()
@@ -132,10 +127,14 @@ func viewInit() {
 }
 
 func search(key tcell.Key) {
-	if index := passwordsList.GetCurrentItem(); index == passwordsList.GetItemCount() {
+	if !isPasswordSelected() {
 		onDone(searchField.GetText(), true)
 	} else {
 		_, secondaryText := passwordsList.GetItemText(passwordsList.GetCurrentItem())
 		onDone(secondaryText, false)
 	}
+}
+
+func isPasswordSelected() bool {
+	return passwordsList.GetItemCount() != 0
 }
