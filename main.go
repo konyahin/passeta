@@ -20,6 +20,10 @@ func main() {
 		log.Fatal("Can't find pass directory! $PASSWORD_STORE_DIR is empty.")
 	}
 
+	if passDir[len(passDir)-1] != '/' {
+		passDir += "/"
+	}
+
 	filepath.WalkDir(passDir, func(path string, d fs.DirEntry, err error) error {
 		switch {
 		case path == passDir:

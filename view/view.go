@@ -112,7 +112,7 @@ func viewInit() {
 			}
 			currentText := searchField.GetText()
 			_, firstPassword := passwordsList.GetItemText(0)
-			first, _, found := strings.Cut(firstPassword[len(currentText)+1:], "/")
+			first, _, found := strings.Cut(firstPassword[len(currentText):], "/")
 			if found {
 				first = first + "/"
 			}
